@@ -1,0 +1,180 @@
+h1 {text-align: center;}
+div {text-align: center;}
+body {
+  overflow-x: hidden;
+  background: #f8f9faff;
+}
+.row {
+  width: 490px !important;
+}
+.active {
+  background-color: f8f9faff;
+}
+
+.hidden {
+  display: none;
+}
+
+input[type=text] {
+  width: 40px;
+  text-align: center;
+  color: #007bb5;
+  -webkit-transition: width 0.4s ease-in-out;
+  transition: width 0.4s ease-in-out;
+  border: transparent;
+}
+
+input[type=text]:focus {
+  width: 40%;
+  text-align: center;
+}
+
+.f_key .keycap {
+  width: 50px;
+  height: inherit;
+  font-size: 15px;
+  line-height: 45px;
+  text-indent: 7px;
+  background: #cdd3de;
+  background: -webkit-linear-gradient(left, #bbc3d2, #cdd3de, #bbc3d2);
+  background: -moz-linear-gradient(left, #bbc3d2, #cdd3de, #bbc3d2);
+  background: -ms-linear-gradient(left, #bbc3d2, #cdd3de, #bbc3d2);
+  background: -o-linear-gradient(left, #bbc3d2, #cdd3de, #bbc3d2);
+  background: linear-gradient(left, #bbc3d2, #cdd3de, #bbc3d2);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  clear: both;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+ 
+#keyboard {
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 4px;
+  background: linearGradient (top, #e5e2e1, #f5f3f1, #e5e2e1);
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2), inset 0 0 3px rgba(0,0,0,0.3);
+  clear: both;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.navbar {
+  background-color: white;
+  clear: both;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.navbar a {
+  float: left;
+  padding: 15px;
+  color: white;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.navbar a:hover {
+  background-color: #000;
+}
+
+.home {
+  background: #093aa3;
+  color: white;
+}
+
+.facebook {
+  background: #3B5998;
+  color: white;
+}
+
+.twitter {
+  background: #55ACEE;
+  color: white;
+}
+
+.paypal {
+  background: #0f70b9;
+  color: white;
+}
+
+.linkedin {
+  background: #007bb5;
+  color: white;
+}
+
+.youtube {
+  background: #bb0000;
+  color: white;
+}
+
+.github {
+  background: #323232ff;
+  color: white;
+}
+
+.instagram {
+  background: #dd4b39;
+  color: white;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #1535ffff;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #1535ffff;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+.tittle {
+  font-size: 20px;
+  color: #007bb5;
+}

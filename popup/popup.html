@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="jquery-3.3.1.min.js"></script>
+<script src="bootstrap.min.js"></script>
+<script src="jquery.min.js"></script>
+<script src="popup.js"></script>
+<link href="popup.css" rel="stylesheet">
+<link href="awesome.min.css" rel="stylesheet"/>
+<link href="bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="row" id="tabbedItemsRow">
+    <div class="col-lg columnBlock">
+      <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="tab" href="#Content0">
+            <i class="fa fa-fw fa-home"></i>
+              <span>Home</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#Content1">
+            <i class="fa fa-fw fa-keyboard-o"></i>
+              <span>Shortcuts</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#Content2">
+            <i class="fa fa-fw fa-cog"></i>
+              <span>Settings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#Content3">
+            <i class="fa fa-fw fa-envelope"></i>
+            <span>Contact</span>
+          </a>
+        </li>
+      </ul>
+      <div class="tab-content">
+        <div id="Content0" class="tab-pane active">
+          <div class="tittle">Oni Download Manager</div>
+          <img id="img-icon" src="../icons/icon_128.png" /></h5>
+          <div class="tittle">Version 1.5.1</div>
+        </div>
+        <div id="Content1" class="tab-pane">
+          <div class="tittle">Interrupt Download</div>
+          <div id="keyboard">
+            <div class="f_key">
+            <div class="keycap">Ctrl</div>
+            <div class="keycap">Shift</div>
+            <div class="keycap">Y</div>
+          </div>
+          </div>
+          <br>
+          <div class="tittle">Custom Port</div>
+          <div id="keyboard">
+            <div class="f_key">
+            <div class="keycap">Ctrl</div>
+            <div class="keycap">Shift</div>
+            <div class="keycap">E</div>
+            </div>
+          </div>
+          <br>
+        </div>
+        <div id="Content2" class="tab-pane">
+          <div class="tittle">Interrupt Download</div>
+            <label class="switch">
+              <input type="checkbox" id="interrupt-download">
+              <span class="slider"></span>
+            </label>
+              <div class="tittle">Costum Port</div>
+              <label class="switch">
+              <input type="checkbox" id="port-custom">
+              <span class="slider"></span>
+              </label>
+            <div class="port">
+              <input type="text" id="port-input">
+            </div>
+          <br>
+        </div>
+        <div id="Content3" class="tab-pane">
+          <div class="navbar">
+            <a id="home" target="_blank" href="#" class="home"><i class="fa fa-home"></i></a>
+            <a target="_blank" href="https://web.facebook.com/torikulhabib/" class="facebook"><i class="fa fa-facebook"></i></a>
+            <a target="_blank" href="https://twitter.com/torikulhabib" class="twitter"><i class="fa fa-twitter"></i></a>
+            <a target="_blank" href="https://paypal.me/TorikulHabib?locale.x=id_ID" class="paypal"><i class="fa fa-paypal"></i></a>
+            <a target="_blank" href="https://www.instagram.com/torikul_habib/" class="instagram"><i class="fa fa-instagram"></i></a>
+            <a target="_blank" href="https://www.linkedin.com/in/torikul-habib-57a053131/" class="linkedin"><i class="fa fa-linkedin"></i></a>
+            <a target="_blank" href="https://www.youtube.com/channel/UCiAKZdQR_eHOAXKTYqEuZMQ" class="youtube"><i class="fa fa-youtube"></i></a>
+            <a target="_blank" href="https://github.com/gabutakut" class="github"><i class="fa fa-github"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
