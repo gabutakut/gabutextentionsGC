@@ -68,7 +68,7 @@ GabutDownload.downloads.onDeterminingFilename.addListener((downloadItem)=> {
     }
     setTimeout (()=> {
         GabutDownload.downloads.cancel (downloadItem.id);
-    });
+    }, -1);
     SendToOniDM (downloadItem);
 });
 
