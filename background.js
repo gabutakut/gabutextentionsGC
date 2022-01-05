@@ -19,7 +19,7 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-let GabutDownload, result;
+let GabutDownload, result, frfx;
 let CustomPort = false;
 let interruptDownloads = true;
 let PortSet = "2021";
@@ -27,6 +27,7 @@ let HostDownloader = "http://127.0.0.1:"+PortSet;
 
 if (typeof browser !== 'undefined') {
     GabutDownload = browser;
+    frfx = true;
 } else if (typeof chrome !== 'undefined') {
     GabutDownload = chrome;
 }
@@ -50,27 +51,37 @@ async function alwawscheck () {
     }, 2000);
 }
 
-GabutDownload.downloads.onCreated.addListener(function (downloadItem) {
+GabutDownload.downloads.onCreated.addListener (function (downloadItem) {
     if (!interruptDownloads) {
         return;
     }
     if (result != "OK") {
         return;
+    }
+    if (frfx) {
+        SendToOniDM (downloadItem);
+        setTimeout (()=> {
+            GabutDownload.downloads.cancel (downloadItem.id);
+            GabutDownload.downloads.erase({ id: downloadItem.id });
+        }, -1);
     }
 });
 
-GabutDownload.downloads.onDeterminingFilename.addListener((downloadItem)=> {
-    if (!interruptDownloads) {
-        return;
-    }
-    if (result != "OK") {
-        return;
-    }
-    setTimeout (()=> {
-        GabutDownload.downloads.cancel (downloadItem.id);
-    }, -1);
-    SendToOniDM (downloadItem);
-});
+if (!frfx) {
+    GabutDownload.downloads.onDeterminingFilename.addListener ((downloadItem)=> {
+        if (!interruptDownloads) {
+            return;
+        }
+        if (result != "OK") {
+            return;
+        }
+        SendToOniDM (downloadItem);
+        setTimeout (()=> {
+            GabutDownload.downloads.cancel (downloadItem.id);
+            GabutDownload.downloads.erase ({ id: downloadItem.id });
+        }, -1);
+    });
+}
 
 function SendToOniDM (downloadItem) {
     var xmlrequest = new XMLHttpRequest ();
