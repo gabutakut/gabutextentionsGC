@@ -1,20 +1,17 @@
 {
   "name": "Gabut Download Manager",
   "description": "Integration for Gabut Download Manager.",
-  "short_name": "Gabut",
+  "short_name": "GabutDM",
   "homepage_url": "https://github.com/gabutakut/gabutextensions",
-  "version": "1.5.0",
-  "minimum_chrome_version": "19.0",
-  "manifest_version": 2,
-  "offline_enabled": true,
+  "version": "1.8.5",
+  "manifest_version": 3,
   "icons": {
     "32": "icons/icon_32.png",
     "48": "icons/icon_48.png",
-    "128": "icons/icon_128.png"
+    "128": "icons/icon_128.svg"
   },
   "background": {
-  "scripts": ["background.js"],
-  "persistent": true
+    "service_worker": "background.js"
   },
   "commands": {
     "Ctrl+Shift+Y": {
@@ -32,7 +29,7 @@
       "description": "Ctrl+Shift+E"
     }
   },
-  "browser_action": {
+  "action": {
     "default_icon": "icons/icon_32.png",
     "default_popup": "popup/popup.html"
   },
@@ -43,7 +40,7 @@
     "storage",
     "history",
     "browsingData",
-    "tabs",
-    "<all_urls>"
-  ]
+    "tabs"
+  ],
+  "host_permissions": ["<all_urls>"]
 }
