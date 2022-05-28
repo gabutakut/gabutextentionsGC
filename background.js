@@ -76,7 +76,7 @@ if (!frfx) {
 }
 
 function SendToOniDM (downloadItem) {
-    var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:{filesize},resumable:${canResume},";
+    var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:${filesize},resumable:${canResume},";
     var urlfinal = content.replace ("${finalUrl}", (downloadItem['finalUrl']||downloadItem['url']));
     var filename = urlfinal.replace ("${filename}", downloadItem['filename']);
     var referre = filename.replace ("${referrer}", downloadItem['referrer']);
@@ -98,6 +98,7 @@ async function load_conf () {
     interruptDownloads = await chromeStorageGetter ('interrupt-download');
     CustomPort = await chromeStorageGetter ('port-custom');
     PortSet = await chromeStorageGetter ('port-input');
+    icon_load ();
 }
 
 async function setPortCustom (interrupt) {
@@ -112,7 +113,6 @@ async function setPortInput (interrupt) {
 
 async function setInterruptDownload (interrupt) {
     await SavetoStorage('interrupt-download', interrupt);
-    icon_load ();
 }
 
 async function SavetoStorage(key, value) {
