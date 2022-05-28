@@ -34,23 +34,20 @@ if (typeof browser !== 'undefined') {
 }
 
 load_conf ();
-function load_conf () {
-    getConfigure ((interruptDownload, CustomP, PortS)=> {
-        interruptDownloads = interruptDownload;
-        CustomPort = CustomP;
-        PortSet = PortS;
-    });
-}
 
 setInterval(function () {
+    icon_load ();
+    result = true;
+    fetch(get_host ()).then((response) => { return response.bodyUsed; }).then((data) => { result = data; });
+}, 1000);
+
+function icon_load () {
     if (interruptDownloads && !result) {
         GabutDownload.action.setIcon({path: "./icons/icon_32.png"});
     } else {
         GabutDownload.action.setIcon({path: "./icons/icon_disabled_32.png"});
     }
-    result = true;
-    fetch(get_host ()).then((response) => { return response.bodyUsed; }).then((data) => { result = data; });
-}, 1000);
+}
 
 if (frfx) {
     GabutDownload.downloads.onCreated.addListener (function (downloadItem) {
@@ -97,24 +94,10 @@ async function chromeStorageGetter (key) {
     });
 }
 
-async function GetConfig (key, default_value = '') {
-    let configValue = default_value;
-    try {
-        configValue = await chromeStorageGetter (key);
-    } catch {}
-    if (["true", "false"].includes(configValue)) {
-        return configValue == "true";
-    }
-    return configValue;
-}
-
-async function getConfigure (callback) {
-    callback (interruptDownloads, CustomPort, PortSet);
-    return {
-        'interrupt-download': await GetConfig ('interrupt-download', interruptDownloads),
-        'port-custom':  await GetConfig ('port-custom', CustomPort),
-        'port-input': await GetConfig ('port-input', PortSet),
-    }
+async function load_conf () {
+    await chromeStorageGetter ('interrupt-download', interruptDownloads);
+    await chromeStorageGetter ('port-custom', CustomPort);
+    await chromeStorageGetter ('port-input', PortSet);
 }
 
 async function setPortCustom (interrupt) {
@@ -132,11 +115,7 @@ async function setPortInput (interrupt) {
 async function setInterruptDownload (interrupt) {
     await SavetoStorage('interrupt-download', interrupt);
     interruptDownloads = interrupt;
-    if (interrupt && result == false) {
-        GabutDownload.action.setIcon({path: "./icons/icon_32.png"});
-    } else {
-        GabutDownload.action.setIcon({path: "./icons/icon_disabled_32.png"});
-    }
+    icon_load ();
 }
 
 async function SavetoStorage(key, value) {
