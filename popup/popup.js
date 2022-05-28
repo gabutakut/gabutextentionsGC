@@ -29,43 +29,43 @@ let PortInput = $('#port-input');
 let DownloadIntrupt = $('#interrupt-download');
 let PortCustom = $('#port-custom');
 
-GabutDownload.runtime.sendMessage({ message: "interuptopen" });
-GabutDownload.runtime.sendMessage({ message: "customopen" });
-GabutDownload.runtime.sendMessage({ message: "portopen" });
+GabutDownload.runtime.sendMessage({ extensionId: "interuptopen" });
+GabutDownload.runtime.sendMessage({ extensionId: "customopen" });
+GabutDownload.runtime.sendMessage({ extensionId: "portopen" });
 DownloadIntrupt.on("change", dwinterupt);
 PortCustom.on("change", customchecked);
 PortInput.on("change paste keyup", portinput);
 
 function dwinterupt () {
-     GabutDownload.runtime.sendMessage({ message: "interuptchecked" + DownloadIntrupt.prop ('checked') });
+     GabutDownload.runtime.sendMessage({  message: DownloadIntrupt.prop ('checked'), extensionId: "interuptchecked" });
 }
 
 function customchecked () {
-     GabutDownload.runtime.sendMessage({ message: "customchecked" + PortCustom.prop ('checked') });
+     GabutDownload.runtime.sendMessage({ message: PortCustom.prop ('checked'), extensionId: "customchecked" });
      hide_popin ();
 }
 
 function portinput () {
-     GabutDownload.runtime.sendMessage({ message: "portval" + PortInput.val () });
+     GabutDownload.runtime.sendMessage({ message: PortInput.val (), extensionId: "portval" });
 }
 
 GabutDownload.runtime.onMessage.addListener((message, callback) => {
-     if (message.message == "Ctrl+Shift+Y") {
-          interruptDownloads = !interruptDownloads;
+     if (message.extensionId == "Ctrl+Shift+Y") {
+          interruptDownloads = message.message;
           DownloadIntrupt.prop('checked', interruptDownloads);
-     } else if (message.message == "Ctrl+Shift+E") {
-          CustomPort = !CustomPort;
+     } else if (message.extensionId == "Ctrl+Shift+E") {
+          CustomPort = message.message;
           PortCustom.prop('checked', CustomPort);
           hide_popin ();
-     } else if (message.message.includes("popintrup")) {
-          interruptDownloads = str_to_bool (message.message);
+     } else if (message.extensionId == "popintrup") {
+          interruptDownloads = message.message;
           DownloadIntrupt.prop('checked', interruptDownloads);
-     } else if (message.message.includes("popcust")) {
-          CustomPort = str_to_bool (message.message);
+     } else if (message.extensionId == "popcust") {
+          CustomPort = message.message;
           PortCustom.prop('checked', CustomPort);
           hide_popin ();
-     } else if (message.message.includes("popport")) {
-          PortInput.val(message.message.replace ("popport", ""));
+     } else if (message.extensionId == "popport") {
+          PortInput.val(message.message);
      }
 });
 
@@ -74,13 +74,5 @@ function hide_popin () {
           PortInput.removeClass ('hidden');
      } else {
           PortInput.addClass ('hidden');
-     }
-}
-
-function str_to_bool (inputs) {
-     if (inputs.includes ("true")) {
-         return true;
-     } else {
-         return false;
      }
 }
