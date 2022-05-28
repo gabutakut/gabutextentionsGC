@@ -95,26 +95,23 @@ async function chromeStorageGetter (key) {
 }
 
 async function load_conf () {
-    await chromeStorageGetter ('interrupt-download', interruptDownloads);
-    await chromeStorageGetter ('port-custom', CustomPort);
-    await chromeStorageGetter ('port-input', PortSet);
+    interruptDownloads = await chromeStorageGetter ('interrupt-download');
+    CustomPort = await chromeStorageGetter ('port-custom');
+    PortSet = await chromeStorageGetter ('port-input');
 }
 
 async function setPortCustom (interrupt) {
     await SavetoStorage('port-custom', interrupt);
-    CustomPort = interrupt;
 }
 
 async function setPortInput (interrupt) {
     if (CustomPort) {
         await SavetoStorage('port-input', interrupt);
-        PortSet = interrupt;
     }
 }
 
 async function setInterruptDownload (interrupt) {
     await SavetoStorage('interrupt-download', interrupt);
-    interruptDownloads = interrupt;
     icon_load ();
 }
 
