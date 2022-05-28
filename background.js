@@ -127,39 +127,33 @@ async function SavetoStorage(key, value) {
 GabutDownload.commands.onCommand.addListener((command) => {
     if (command == "Ctrl+Shift+Y") {
         setInterruptDownload (!interruptDownloads);
-        GabutDownload.runtime.sendMessage({ message: command });
+        GabutDownload.runtime.sendMessage({ extensionId: command, message: !interruptDownloads});
+        load_conf ();
     } else if (command == "Ctrl+Shift+E") {
         setPortCustom (!CustomPort);
-        GabutDownload.runtime.sendMessage({ message: command });
+        GabutDownload.runtime.sendMessage({ extensionId: command, message:  !CustomPort});
+        load_conf ();
     }
 });
 
 GabutDownload.runtime.onMessage.addListener((message, callback) => {
-    if (message.message == "interuptopen") {
-        GabutDownload.runtime.sendMessage({ message: "popintrup" + interruptDownloads });
-    } else if (message.message == "customopen") {
-        GabutDownload.runtime.sendMessage({ message: "popcust" + CustomPort });
-    } else if (message.message == "portopen") {
-        GabutDownload.runtime.sendMessage({ message: "popport" + PortSet });
-    } else if (message.message.includes("interuptchecked")) {
-        setInterruptDownload (str_to_bool (message.message));
+    if (message.extensionId == "interuptopen") {
+        GabutDownload.runtime.sendMessage({ message: interruptDownloads, extensionId: "popintrup" });
+    } else if (message.extensionId == "customopen") {
+        GabutDownload.runtime.sendMessage({ message: CustomPort, extensionId: "popcust" });
+    } else if (message.extensionId == "portopen") {
+        GabutDownload.runtime.sendMessage({ message: PortSet, extensionId: "popport" });
+    } else if (message.extensionId == "interuptchecked") {
+        setInterruptDownload (message.message);
         load_conf ();
-    } else if (message.message.includes("customchecked")) {
-        setPortCustom (str_to_bool (message.message), ()=>{});
+    } else if (message.extensionId == "customchecked") {
+        setPortCustom (message.message);
         load_conf ();
-    } else if (message.message.includes("portval")) {
-        setPortInput (message.message.replace ("portval", ""));
+    } else if (message.extensionId == "portval") {
+        setPortInput (message.message);
         load_conf ();
     }
 });
-
-function str_to_bool (inputs) {
-    if (inputs.includes ("true")) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 function get_host () {
     return HostDownloader + PortSet;
