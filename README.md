@@ -1,7 +1,7 @@
 # Gabut Extensions
 <h1 align="center">
     <br>
-    <img src="icons/icon_128.png" alt="Gabut Extensions">
+    <img src="icons/icon_128.svg" alt="Gabut Extensions">
 </h1>
 <h4 align="center">Extensions for Gabut Download Manager</h4>
 
