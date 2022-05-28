@@ -19,11 +19,12 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-let GabutDownload, result, frfx;
-let CustomPort = false;
+let GabutDownload, frfx;
+let result = true;
 let interruptDownloads = true;
 let PortSet = "2021";
-let HostDownloader = "http://127.0.0.1:"+PortSet;
+let CustomPort = false;
+let HostDownloader = "http://127.0.0.1:";
 
 if (typeof browser !== 'undefined') {
     GabutDownload = browser;
@@ -32,73 +33,65 @@ if (typeof browser !== 'undefined') {
     GabutDownload = chrome;
 }
 
-alwawscheck ();
-async function alwawscheck () {
-    setTimeout(function () {
-        if (result == "OK" && interruptDownloads) {
-            GabutDownload.browserAction.setIcon({path: "./icons/icon_32.png"});
-        } else {
-            GabutDownload.browserAction.setIcon({path: "./icons/icon_disabled_32.png"});
-        }
-        var xmlrequest = new XMLHttpRequest ();
-        xmlrequest.open ("GET", HostDownloader, true);
-        xmlrequest.setRequestHeader ("Content-type", "application/x-www-form-urlencoded");
-        xmlrequest.send ("");
-        xmlrequest.onreadystatechange = function () {
-            result = xmlrequest.statusText;
-        }
-        alwawscheck ();
-    }, 2000);
+load_conf ();
+function load_conf () {
+    getConfigure ((interruptDownload, CustomP, PortS)=> {
+        interruptDownloads = interruptDownload;
+        CustomPort = CustomP;
+        PortSet = PortS;
+    });
 }
 
-GabutDownload.downloads.onCreated.addListener (function (downloadItem) {
-    if (!interruptDownloads) {
-        return;
+setInterval(function () {
+    if (interruptDownloads && !result) {
+        GabutDownload.action.setIcon({path: "./icons/icon_32.png"});
+    } else {
+        GabutDownload.action.setIcon({path: "./icons/icon_disabled_32.png"});
     }
-    if (result != "OK") {
-        return;
-    }
-    if (frfx) {
-        SendToOniDM (downloadItem);
+    result = true;
+    fetch(get_host ()).then((response) => { return response.bodyUsed; }).then((data) => { result = data; });
+}, 1000);
+
+if (frfx) {
+    GabutDownload.downloads.onCreated.addListener (function (downloadItem) {
+        if (!interruptDownloads || result) {
+            return;
+        }
         setTimeout (()=> {
             GabutDownload.downloads.cancel (downloadItem.id);
             GabutDownload.downloads.erase({ id: downloadItem.id });
-        }, -1);
-    }
-});
+        });
+        SendToOniDM (downloadItem);
+    });
+}
 
 if (!frfx) {
-    GabutDownload.downloads.onDeterminingFilename.addListener ((downloadItem)=> {
-        if (!interruptDownloads) {
+    GabutDownload.downloads.onDeterminingFilename.addListener (function (downloadItem) {
+        if (!interruptDownloads || result) {
             return;
         }
-        if (result != "OK") {
-            return;
-        }
-        SendToOniDM (downloadItem);
         setTimeout (()=> {
             GabutDownload.downloads.cancel (downloadItem.id);
-            GabutDownload.downloads.erase ({ id: downloadItem.id });
-        }, -1);
+            GabutDownload.downloads.erase({ id: downloadItem.id });
+        });
+        SendToOniDM (downloadItem);
     });
 }
 
 function SendToOniDM (downloadItem) {
-    var xmlrequest = new XMLHttpRequest ();
-    var content = "link:" + (downloadItem['finalUrl']||downloadItem['url']);
-    content += ",filename:" + downloadItem['filename'];
-    content += ",referrer:" + downloadItem['referrer'];
-    content += ",mimetype:" + downloadItem['mime'];
-    content += ",filesize:" + downloadItem['fileSize'];
-    content += ",resumable:" + downloadItem['canResume'] + ",";
-    xmlrequest.open ("POST", HostDownloader, true);
-    xmlrequest.setRequestHeader ("Content-type", "application/x-www-form-urlencoded");
-    xmlrequest.send (content);
+    var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:{filesize},resumable:${canResume},";
+    var urlfinal = content.replace ("${finalUrl}", (downloadItem['finalUrl']||downloadItem['url']));
+    var filename = urlfinal.replace ("${filename}", downloadItem['filename']);
+    var referre = filename.replace ("${referrer}", downloadItem['referrer']);
+    var mime = referre.replace ("${mime}", downloadItem['mime']);
+    var filseize = mime.replace ("${filesize}", downloadItem['fileSize']);
+    var resume = filseize.replace ("${canResume}", downloadItem['canResume']);
+    fetch(get_host (), { method: 'post', body: resume }).then(function(r) { return r.text(); });
 }
 
 async function chromeStorageGetter (key) {
     return new Promise (resolve => {
-        GabutDownload.storage.local.get (key, (obj)=> {
+        GabutDownload.storage.sync.get (key, (obj)=> {
             return resolve(obj[key] || '');
         })
     });
@@ -124,47 +117,71 @@ async function getConfigure (callback) {
     }
 }
 
-async function setPortCustom (interrupt, callback) {
+async function setPortCustom (interrupt) {
     await SavetoStorage('port-custom', interrupt);
     CustomPort = interrupt;
-    callback (CustomPort);
 }
 
-async function setPortInput (interrupt, callback) {
+async function setPortInput (interrupt) {
     if (CustomPort) {
         await SavetoStorage('port-input', interrupt);
         PortSet = interrupt;
-        HostDownloader = "http://127.0.0.1:"+PortSet;
-        callback (PortSet);
     }
 }
 
 async function setInterruptDownload (interrupt) {
     await SavetoStorage('interrupt-download', interrupt);
     interruptDownloads = interrupt;
-    if (interrupt && result == "OK") {
-        GabutDownload.browserAction.setIcon({path: "./icons/icon_32.png"});
+    if (interrupt && result == false) {
+        GabutDownload.action.setIcon({path: "./icons/icon_32.png"});
     } else {
-        GabutDownload.browserAction.setIcon({path: "./icons/icon_disabled_32.png"});
+        GabutDownload.action.setIcon({path: "./icons/icon_disabled_32.png"});
     }
 }
 
 async function SavetoStorage(key, value) {
     return new Promise(resolve => {
-        GabutDownload.storage.local.set({[key]: value}, resolve);
+        GabutDownload.storage.sync.set({[key]: value}, resolve);
     });
 }
 
 GabutDownload.commands.onCommand.addListener((command) => {
     if (command == "Ctrl+Shift+Y") {
         setInterruptDownload (!interruptDownloads);
-        GabutDownload.runtime.sendMessage({
-            message: command
-        });
+        GabutDownload.runtime.sendMessage({ message: command });
     } else if (command == "Ctrl+Shift+E") {
-        setPortCustom (!CustomPort, ()=>{});
-        GabutDownload.runtime.sendMessage({
-            message: command
-        });
+        setPortCustom (!CustomPort);
+        GabutDownload.runtime.sendMessage({ message: command });
     }
 });
+
+GabutDownload.runtime.onMessage.addListener((message, callback) => {
+    if (message.message == "interuptopen") {
+        GabutDownload.runtime.sendMessage({ message: "popintrup" + interruptDownloads });
+    } else if (message.message == "customopen") {
+        GabutDownload.runtime.sendMessage({ message: "popcust" + CustomPort });
+    } else if (message.message == "portopen") {
+        GabutDownload.runtime.sendMessage({ message: "popport" + PortSet });
+    } else if (message.message.includes("interuptchecked")) {
+        setInterruptDownload (str_to_bool (message.message));
+        load_conf ();
+    } else if (message.message.includes("customchecked")) {
+        setPortCustom (str_to_bool (message.message), ()=>{});
+        load_conf ();
+    } else if (message.message.includes("portval")) {
+        setPortInput (message.message.replace ("portval", ""));
+        load_conf ();
+    }
+});
+
+function str_to_bool (inputs) {
+    if (inputs.includes ("true")) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function get_host () {
+    return HostDownloader + PortSet;
+}
