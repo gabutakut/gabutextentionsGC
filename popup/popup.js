@@ -19,7 +19,7 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-let interruptDownloads, CustomPort, GabutDownload;
+let GabutDownload;
 if (typeof browser !== 'undefined') {
      GabutDownload = browser;
 } else if (typeof chrome !== 'undefined') {
@@ -51,18 +51,14 @@ function portinput () {
 
 GabutDownload.runtime.onMessage.addListener((message, callback) => {
      if (message.extensionId == "Ctrl+Shift+Y") {
-          interruptDownloads = message.message;
-          DownloadIntrupt.prop('checked', interruptDownloads);
+          DownloadIntrupt.prop('checked', message.message);
      } else if (message.extensionId == "Ctrl+Shift+E") {
-          CustomPort = message.message;
-          PortCustom.prop('checked', CustomPort);
+          PortCustom.prop('checked', message.message);
           hide_popin ();
      } else if (message.extensionId == "popintrup") {
-          interruptDownloads = message.message;
-          DownloadIntrupt.prop('checked', interruptDownloads);
+          DownloadIntrupt.prop('checked', message.message);
      } else if (message.extensionId == "popcust") {
-          CustomPort = message.message;
-          PortCustom.prop('checked', CustomPort);
+          PortCustom.prop('checked', message.message);
           hide_popin ();
      } else if (message.extensionId == "popport") {
           PortInput.val(message.message);
