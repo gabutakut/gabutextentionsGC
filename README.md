@@ -1,4 +1,4 @@
-# Gabut Extensions
+# Gabut Extensions Google Chrome
 <h1 align="center">
     <br>
     <img src="icons/icon_128.svg" alt="Gabut Extensions">
