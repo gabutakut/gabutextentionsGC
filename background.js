@@ -19,19 +19,11 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-let GabutDownload, frfx;
 let result = true;
 let interruptDownloads = true;
 let PortSet = "2021";
 let CustomPort = false;
 let HostDownloader = "http://127.0.0.1:";
-
-if (typeof browser !== 'undefined') {
-    GabutDownload = browser;
-    frfx = true;
-} else if (typeof chrome !== 'undefined') {
-    GabutDownload = chrome;
-}
 
 load_conf ();
 
@@ -43,37 +35,34 @@ setInterval(function () {
 
 function icon_load () {
     if (interruptDownloads && !result) {
-        GabutDownload.action.setIcon({path: "./icons/icon_32.png"});
+        chrome.action.setIcon({path: "./icons/icon_32.png"});
     } else {
-        GabutDownload.action.setIcon({path: "./icons/icon_disabled_32.png"});
+        chrome.action.setIcon({path: "./icons/icon_disabled_32.png"});
     }
 }
 
-if (frfx) {
-    GabutDownload.downloads.onCreated.addListener (function (downloadItem) {
-        if (!interruptDownloads || result) {
-            return;
-        }
-        setTimeout (()=> {
-            GabutDownload.downloads.cancel (downloadItem.id);
-            GabutDownload.downloads.erase({ id: downloadItem.id });
-        });
-        SendToOniDM (downloadItem);
-    });
-}
+chrome.downloads.onCreated.addListener (function (downloadItem) {
+    if (!interruptDownloads || result) {
+        return;
+    }
+    SendToOniDM (downloadItem);
+    setTimeout (()=> {
+        chrome.downloads.cancel (downloadItem.id);
+        chrome.downloads.erase({ id: downloadItem.id });
+    }, 1);
+});
 
-if (!frfx) {
-    GabutDownload.downloads.onDeterminingFilename.addListener (function (downloadItem) {
-        if (!interruptDownloads || result) {
-            return;
-        }
-        setTimeout (()=> {
-            GabutDownload.downloads.cancel (downloadItem.id);
-            GabutDownload.downloads.erase({ id: downloadItem.id });
-        });
-        SendToOniDM (downloadItem);
+chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
+    if (!interruptDownloads || result) {
+        return;
+    }
+    setTimeout (()=> {
+        chrome.downloads.cancel (downloadItem.id);
+        chrome.downloads.erase({ id: downloadItem.id });
     });
-}
+    SendToOniDM (downloadItem);
+});
+
 
 function SendToOniDM (downloadItem) {
     var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:${filesize},resumable:${canResume},";
@@ -88,7 +77,7 @@ function SendToOniDM (downloadItem) {
 
 async function chromeStorageGetter (key) {
     return new Promise (resolve => {
-        GabutDownload.storage.sync.get (key, (obj)=> {
+        chrome.storage.sync.get (key, (obj)=> {
             return resolve(obj[key] || '');
         })
     });
@@ -117,29 +106,29 @@ async function setInterruptDownload (interrupt) {
 
 async function SavetoStorage(key, value) {
     return new Promise(resolve => {
-        GabutDownload.storage.sync.set({[key]: value}, resolve);
+        chrome.storage.sync.set({[key]: value}, resolve);
     });
 }
 
-GabutDownload.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener((command) => {
     if (command == "Ctrl+Shift+Y") {
         setInterruptDownload (!interruptDownloads);
-        GabutDownload.runtime.sendMessage({ extensionId: command, message: !interruptDownloads});
+        chrome.runtime.sendMessage({ extensionId: command, message: !interruptDownloads});
         load_conf ();
     } else if (command == "Ctrl+Shift+E") {
         setPortCustom (!CustomPort);
-        GabutDownload.runtime.sendMessage({ extensionId: command, message:  !CustomPort});
+        chrome.runtime.sendMessage({ extensionId: command, message:  !CustomPort});
         load_conf ();
     }
 });
 
-GabutDownload.runtime.onMessage.addListener((message, callback) => {
+chrome.runtime.onMessage.addListener((message, callback) => {
     if (message.extensionId == "interuptopen") {
-        GabutDownload.runtime.sendMessage({ message: interruptDownloads, extensionId: "popintrup" });
+        chrome.runtime.sendMessage({ message: interruptDownloads, extensionId: "popintrup" });
     } else if (message.extensionId == "customopen") {
-        GabutDownload.runtime.sendMessage({ message: CustomPort, extensionId: "popcust" });
+        chrome.runtime.sendMessage({ message: CustomPort, extensionId: "popcust" });
     } else if (message.extensionId == "portopen") {
-        GabutDownload.runtime.sendMessage({ message: PortSet, extensionId: "popport" });
+        chrome.runtime.sendMessage({ message: PortSet, extensionId: "popport" });
     } else if (message.extensionId == "interuptchecked") {
         setInterruptDownload (message.message);
         load_conf ();

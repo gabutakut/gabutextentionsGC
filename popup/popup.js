@@ -19,37 +19,31 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-let GabutDownload;
-if (typeof browser !== 'undefined') {
-     GabutDownload = browser;
-} else if (typeof chrome !== 'undefined') {
-     GabutDownload = chrome;
-}
 let PortInput = $('#port-input');
 let DownloadIntrupt = $('#interrupt-download');
 let PortCustom = $('#port-custom');
 
-GabutDownload.runtime.sendMessage({ extensionId: "interuptopen" });
-GabutDownload.runtime.sendMessage({ extensionId: "customopen" });
-GabutDownload.runtime.sendMessage({ extensionId: "portopen" });
+chrome.runtime.sendMessage({ extensionId: "interuptopen" });
+chrome.runtime.sendMessage({ extensionId: "customopen" });
+chrome.runtime.sendMessage({ extensionId: "portopen" });
 DownloadIntrupt.on("change", dwinterupt);
 PortCustom.on("change", customchecked);
 PortInput.on("change paste keyup", portinput);
 
 function dwinterupt () {
-     GabutDownload.runtime.sendMessage({  message: DownloadIntrupt.prop ('checked'), extensionId: "interuptchecked" });
+     chrome.runtime.sendMessage({  message: DownloadIntrupt.prop ('checked'), extensionId: "interuptchecked" });
 }
 
 function customchecked () {
-     GabutDownload.runtime.sendMessage({ message: PortCustom.prop ('checked'), extensionId: "customchecked" });
+     chrome.runtime.sendMessage({ message: PortCustom.prop ('checked'), extensionId: "customchecked" });
      hide_popin ();
 }
 
 function portinput () {
-     GabutDownload.runtime.sendMessage({ message: PortInput.val (), extensionId: "portval" });
+     chrome.runtime.sendMessage({ message: PortInput.val (), extensionId: "portval" });
 }
 
-GabutDownload.runtime.onMessage.addListener((message, callback) => {
+chrome.runtime.onMessage.addListener((message, callback) => {
      if (message.extensionId == "Ctrl+Shift+Y") {
           DownloadIntrupt.prop('checked', message.message);
      } else if (message.extensionId == "Ctrl+Shift+E") {
