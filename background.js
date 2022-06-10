@@ -19,37 +19,33 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-let result = true;
-let interruptDownloads = true;
-let PortSet = "2021";
-let CustomPort = false;
-let HostDownloader = "http://127.0.0.1:";
+var result = true;
+var interruptDownloads = true;
+var defaultPort = "2021";
+var PortSet = "";
+var CustomPort = false;
+var HostDownloader = "http://127.0.0.1:";
 
 load_conf ();
 
 setInterval(function () {
     icon_load ();
     result = true;
-    fetch(get_host ()).then((response) => { return response.bodyUsed; }).then((data) => { result = data; });
-}, 1000);
-
-function icon_load () {
-    if (interruptDownloads && !result) {
-        chrome.action.setIcon({path: "./icons/icon_32.png"});
-    } else {
-        chrome.action.setIcon({path: "./icons/icon_disabled_32.png"});
-    }
-}
+    fetch(get_host ()).then((response) => { return response.bodyUsed; }).then((data) => {
+        if (data == false) {
+            result = false;
+        }
+    });
+}, 2000);
 
 chrome.downloads.onCreated.addListener (function (downloadItem) {
     if (!interruptDownloads || result) {
         return;
     }
-    SendToOniDM (downloadItem);
     setTimeout (()=> {
         chrome.downloads.cancel (downloadItem.id);
         chrome.downloads.erase({ id: downloadItem.id });
-    }, 1);
+    }, SendToOniDM (downloadItem));
 });
 
 chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
@@ -59,20 +55,20 @@ chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
     setTimeout (()=> {
         chrome.downloads.cancel (downloadItem.id);
         chrome.downloads.erase({ id: downloadItem.id });
-    });
-    SendToOniDM (downloadItem);
+    }, SendToOniDM (downloadItem));
 });
 
 
 function SendToOniDM (downloadItem) {
     var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:${filesize},resumable:${canResume},";
-    var urlfinal = content.replace ("${finalUrl}", (downloadItem['finalUrl']||downloadItem['url']));
+    var urlfinal = content.replace ("${finalUrl}", (downloadItem['url']));
     var filename = urlfinal.replace ("${filename}", downloadItem['filename']);
     var referrer = filename.replace ("${referrer}", downloadItem['referrer']);
     var mime = referrer.replace ("${mime}", downloadItem['mime']);
     var filseize = mime.replace ("${filesize}", downloadItem['fileSize']);
     var resume = filseize.replace ("${canResume}", downloadItem['canResume']);
     fetch(get_host (), { method: 'post', body: resume }).then(function(r) { return r.text(); });
+    return 2;
 }
 
 async function chromeStorageGetter (key) {
@@ -113,11 +109,9 @@ async function SavetoStorage(key, value) {
 chrome.commands.onCommand.addListener((command) => {
     if (command == "Ctrl+Shift+Y") {
         setInterruptDownload (!interruptDownloads);
-        chrome.runtime.sendMessage({ extensionId: command, message: !interruptDownloads});
         load_conf ();
     } else if (command == "Ctrl+Shift+E") {
         setPortCustom (!CustomPort);
-        chrome.runtime.sendMessage({ extensionId: command, message:  !CustomPort});
         load_conf ();
     }
 });
@@ -142,5 +136,17 @@ chrome.runtime.onMessage.addListener((message, callback) => {
 });
 
 function get_host () {
-    return HostDownloader + PortSet;
+    if (CustomPort) {
+        return HostDownloader + PortSet;
+    } else {
+        return HostDownloader + defaultPort;
+    }
+}
+
+function icon_load () {
+    if (interruptDownloads && !result) {
+        chrome.action.setIcon({path: "./icons/icon_32.png"});
+    } else {
+        chrome.action.setIcon({path: "./icons/icon_disabled_32.png"});
+    }
 }

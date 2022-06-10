@@ -30,17 +30,13 @@
     }
   },
   "action": {
+    "default_title": "Gabut Menu",
     "default_icon": "icons/icon_32.png",
     "default_popup": "popup/popup.html"
   },
   "permissions": [
-    "contextMenus",
     "downloads",
-    "cookies",
-    "storage",
-    "history",
-    "browsingData",
-    "tabs"
+    "storage"
   ],
   "host_permissions": ["<all_urls>"]
 }

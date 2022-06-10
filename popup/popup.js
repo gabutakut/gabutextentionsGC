@@ -66,3 +66,9 @@ function hide_popin () {
           PortInput.addClass ('hidden');
      }
 }
+
+setInterval(function () {
+     chrome.runtime.sendMessage({ extensionId: "interuptopen" });
+     chrome.runtime.sendMessage({ extensionId: "customopen" });
+ }, 1000);
+ 
