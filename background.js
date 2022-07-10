@@ -19,7 +19,7 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-var result = true;
+var result = false;
 var interruptDownloads = true;
 var defaultPort = "2021";
 var PortSet = "";
@@ -29,12 +29,13 @@ var HostDownloader = "http://127.0.0.1:";
 load_conf ();
 
 setInterval(function () {
-    icon_load ();
-    result = true;
-    fetch(get_host ()).then((response) => { return response.bodyUsed; }).then((data) => {
+    fetch (get_host ()).then((response) => { return response.bodyUsed; }).then((data) => {
         if (data == false) {
             result = false;
+        } else {
+            result = true;
         }
+        icon_load ();
     });
 }, 2000);
 
@@ -45,7 +46,7 @@ chrome.downloads.onCreated.addListener (function (downloadItem) {
     setTimeout (()=> {
         chrome.downloads.cancel (downloadItem.id);
         chrome.downloads.erase({ id: downloadItem.id });
-    }, SendToOniDM (downloadItem));
+    }, 1);
 });
 
 chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
@@ -61,13 +62,13 @@ chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
 
 function SendToOniDM (downloadItem) {
     var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:${filesize},resumable:${canResume},";
-    var urlfinal = content.replace ("${finalUrl}", (downloadItem['url']));
+    var urlfinal = content.replace ("${finalUrl}", (downloadItem['finalUrl']));
     var filename = urlfinal.replace ("${filename}", downloadItem['filename']);
     var referrer = filename.replace ("${referrer}", downloadItem['referrer']);
     var mime = referrer.replace ("${mime}", downloadItem['mime']);
     var filseize = mime.replace ("${filesize}", downloadItem['fileSize']);
     var resume = filseize.replace ("${canResume}", downloadItem['canResume']);
-    fetch(get_host (), { method: 'post', body: resume }).then(function(r) { return r.text(); });
+    fetch (get_host (), { method: 'post', body: resume }).then (function (r) { return r.text (); });
     return 2;
 }
 
