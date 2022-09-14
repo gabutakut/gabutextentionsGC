@@ -70,5 +70,4 @@ function hide_popin () {
 setInterval(function () {
      chrome.runtime.sendMessage({ extensionId: "interuptopen" });
      chrome.runtime.sendMessage({ extensionId: "customopen" });
- }, 1000);
- 
+}, 1000);
