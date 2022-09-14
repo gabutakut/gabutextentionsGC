@@ -19,48 +19,45 @@
 * Authored by: torikulhabib <torik.habib@Gmail.com>
 */
 
-var result = false;
+var ResponGdm = false;
 var interruptDownloads = true;
-var defaultPort = "2021";
 var PortSet = "";
 var CustomPort = false;
-var HostDownloader = "http://127.0.0.1:";
 
 load_conf ();
 
-setInterval(function () {
-    fetch (get_host ()).then((response) => { return response.bodyUsed; }).then((data) => {
-        if (data == false) {
-            result = false;
-        } else {
-            result = true;
-        }
-        icon_load ();
+setInterval (function () {
+    fetch (get_host (), {requiredStatus: 'ok'})
+    .then(function() {
+        ResponGdm = false;
+    }).catch(function() {
+        ResponGdm = true;
     });
+    icon_load ();
 }, 2000);
 
 chrome.downloads.onCreated.addListener (function (downloadItem) {
-    if (!interruptDownloads || result) {
+    if (!interruptDownloads || ResponGdm) {
         return;
     }
     setTimeout (()=> {
         chrome.downloads.cancel (downloadItem.id);
-        chrome.downloads.erase({ id: downloadItem.id });
+        chrome.downloads.erase ({ id: downloadItem.id });
     }, 1);
 });
 
 chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
-    if (!interruptDownloads || result) {
+    if (!interruptDownloads || ResponGdm) {
         return;
     }
     setTimeout (()=> {
         chrome.downloads.cancel (downloadItem.id);
-        chrome.downloads.erase({ id: downloadItem.id });
+        chrome.downloads.erase ({ id: downloadItem.id });
     }, SendToOniDM (downloadItem));
 });
 
 
-function SendToOniDM (downloadItem) {
+async function SendToOniDM (downloadItem) {
     var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:${filesize},resumable:${canResume},";
     var urlfinal = content.replace ("${finalUrl}", (downloadItem['finalUrl']));
     var filename = urlfinal.replace ("${filename}", downloadItem['filename']);
@@ -68,7 +65,7 @@ function SendToOniDM (downloadItem) {
     var mime = referrer.replace ("${mime}", downloadItem['mime']);
     var filseize = mime.replace ("${filesize}", downloadItem['fileSize']);
     var resume = filseize.replace ("${canResume}", downloadItem['canResume']);
-    fetch (get_host (), { method: 'post', body: resume }).then (function (r) { return r.text (); });
+    fetch (get_host (), { method: 'post', body: resume }).then (function (r) { return r.text (); }).catch (function () {});
     return 2;
 }
 
@@ -138,14 +135,14 @@ chrome.runtime.onMessage.addListener((message, callback) => {
 
 function get_host () {
     if (CustomPort) {
-        return HostDownloader + PortSet;
+        return "http://127.0.0.1:" + PortSet;
     } else {
-        return HostDownloader + defaultPort;
+        return "http://127.0.0.1:2021";
     }
 }
 
 function icon_load () {
-    if (interruptDownloads && !result) {
+    if (interruptDownloads && !ResponGdm) {
         chrome.action.setIcon({path: "./icons/icon_32.png"});
     } else {
         chrome.action.setIcon({path: "./icons/icon_disabled_32.png"});
