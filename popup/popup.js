@@ -23,39 +23,39 @@ let PortInput = $('#port-input');
 let DownloadIntrupt = $('#interrupt-download');
 let PortCustom = $('#port-custom');
 
-chrome.runtime.sendMessage({ extensionId: "interuptopen" });
-chrome.runtime.sendMessage({ extensionId: "customopen" });
-chrome.runtime.sendMessage({ extensionId: "portopen" });
+chrome.runtime.sendMessage({ extensionId: "interuptopen" }).catch(function() {});
+chrome.runtime.sendMessage({ extensionId: "customopen" }).catch(function() {});
+chrome.runtime.sendMessage({ extensionId: "portopen" }).catch(function() {});
 DownloadIntrupt.on("change", dwinterupt);
 PortCustom.on("change", customchecked);
 PortInput.on("change paste keyup", portinput);
 
 function dwinterupt () {
-     chrome.runtime.sendMessage({  message: DownloadIntrupt.prop ('checked'), extensionId: "interuptchecked" });
+     chrome.runtime.sendMessage({  message: DownloadIntrupt.prop ('checked'), extensionId: "interuptchecked" }).catch(function() {});
 }
 
 function customchecked () {
-     chrome.runtime.sendMessage({ message: PortCustom.prop ('checked'), extensionId: "customchecked" });
+     chrome.runtime.sendMessage({ message: PortCustom.prop ('checked'), extensionId: "customchecked" }).catch(function() {});
      hide_popin ();
 }
 
 function portinput () {
-     chrome.runtime.sendMessage({ message: PortInput.val (), extensionId: "portval" });
+     chrome.runtime.sendMessage({ message: PortInput.val (), extensionId: "portval" }).catch(function() {});
 }
 
-chrome.runtime.onMessage.addListener((message, callback) => {
-     if (message.extensionId == "Ctrl+Shift+Y") {
-          DownloadIntrupt.prop('checked', message.message);
-     } else if (message.extensionId == "Ctrl+Shift+E") {
-          PortCustom.prop('checked', message.message);
+chrome.runtime.onMessage.addListener((request, callback) => {
+     if (request.extensionId == "Ctrl+Shift+Y") {
+          DownloadIntrupt.prop('checked', request.message);
+     } else if (request.extensionId == "Ctrl+Shift+E") {
+          PortCustom.prop('checked', request.message);
           hide_popin ();
-     } else if (message.extensionId == "popintrup") {
-          DownloadIntrupt.prop('checked', message.message);
-     } else if (message.extensionId == "popcust") {
-          PortCustom.prop('checked', message.message);
+     } else if (request.extensionId == "popintrup") {
+          DownloadIntrupt.prop('checked', request.message);
+     } else if (request.extensionId == "popcust") {
+          PortCustom.prop('checked', request.message);
           hide_popin ();
-     } else if (message.extensionId == "popport") {
-          PortInput.val(message.message);
+     } else if (request.extensionId == "popport") {
+          PortInput.val(request.message);
      }
 });
 
@@ -68,6 +68,6 @@ function hide_popin () {
 }
 
 setInterval(function () {
-     chrome.runtime.sendMessage({ extensionId: "interuptopen" });
-     chrome.runtime.sendMessage({ extensionId: "customopen" });
+     chrome.runtime.sendMessage({ extensionId: "interuptopen" }).catch(function() {});
+     chrome.runtime.sendMessage({ extensionId: "customopen" }).catch(function() {});
 }, 1000);
