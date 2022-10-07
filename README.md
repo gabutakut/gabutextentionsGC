@@ -10,7 +10,7 @@ Extensions Browser
 Integration for Gabut Download manager.
 
 Extensions created to send the url of an internet browser to the gabut download manager.
-
+support download video on webpage
 Try gabut ext on google chrome
 
 
