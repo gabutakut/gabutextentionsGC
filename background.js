@@ -36,6 +36,24 @@ setInterval (function () {
     icon_load ();
 }, 2000);
 
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
+    chrome.webRequest.onResponseStarted.addListener (function GetRespond (content) {
+        if (content.tabId === -1) {
+            return;
+        }
+        const length = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-LENGTH').map (lcont => lcont.value).shift ();
+        if (length > 1) {
+            let gdmtype = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-TYPE')[0].value;
+            if (gdmtype.startsWith ('video')) {
+                chrome.tabs.sendMessage(content.tabId, {message: 'gdmvideo', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+            } else if (gdmtype.startsWith ('audio')) {
+                chrome.tabs.sendMessage(content.tabId, {message: 'gdmaudio', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+            }
+        }
+    }, {urls: ['<all_urls>']}, ['responseHeaders']);
+    chrome.tabs.sendMessage(tabId, {message: 'gdmclean'}).then (function () {}).catch(function() {});
+});
+
 chrome.downloads.onCreated.addListener (function (downloadItem) {
     if (!interruptDownloads || ResponGdm) {
         return;
@@ -56,23 +74,37 @@ chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
     }, SendToOniDM (downloadItem));
 });
 
-
-async function SendToOniDM (downloadItem) {
-    var content = "link:${finalUrl},filename:${filename},referrer:${referrer},mimetype:${mime},filesize:${filesize},resumable:${canResume},";
-    var urlfinal = content.replace ("${finalUrl}", (downloadItem['finalUrl']));
-    var filename = urlfinal.replace ("${filename}", downloadItem['filename']);
-    var referrer = filename.replace ("${referrer}", downloadItem['referrer']);
-    var mime = referrer.replace ("${mime}", downloadItem['mime']);
-    var filseize = mime.replace ("${filesize}", downloadItem['fileSize']);
-    var resume = filseize.replace ("${canResume}", downloadItem['canResume']);
-    fetch (get_host (), { method: 'post', body: resume }).then (function (r) { return r.text (); }).catch (function () {});
+SendToOniDM = function (downloadItem) {
+    fetch (get_host (), { method: 'post', body: get_downloader (downloadItem) }).then (function (r) { return r.text (); }).catch (function () {});
     return 2;
+}
+
+function get_downloader (downloadItem) {
+    let gdmurl = 'link:';
+    gdmurl += downloadItem['finalUrl'];
+    gdmurl += ',';
+    gdmurl += 'filename:';
+    gdmurl += downloadItem['filename'];
+    gdmurl += ',';
+    gdmurl += 'referrer:';
+    gdmurl += downloadItem['referrer'];
+    gdmurl += ',';
+    gdmurl += 'mimetype:';
+    gdmurl += downloadItem['mime'];
+    gdmurl += ',';
+    gdmurl += 'filesize:';
+    gdmurl += downloadItem['fileSize'];
+    gdmurl += ',';
+    gdmurl += 'resumable:';
+    gdmurl += downloadItem['canResume'];
+    gdmurl += ',';
+    return gdmurl;
 }
 
 async function chromeStorageGetter (key) {
     return new Promise (resolve => {
         chrome.storage.sync.get (key, (obj)=> {
-            return resolve(obj[key] || '');
+            return resolve (obj[key] || '');
         })
     });
 }
@@ -114,26 +146,31 @@ chrome.commands.onCommand.addListener((command) => {
     }
 });
 
-chrome.runtime.onMessage.addListener((message, callback) => {
-    if (message.extensionId == "interuptopen") {
-        chrome.runtime.sendMessage({ message: interruptDownloads, extensionId: "popintrup" });
-    } else if (message.extensionId == "customopen") {
-        chrome.runtime.sendMessage({ message: CustomPort, extensionId: "popcust" });
-    } else if (message.extensionId == "portopen") {
-        chrome.runtime.sendMessage({ message: PortSet, extensionId: "popport" });
-    } else if (message.extensionId == "interuptchecked") {
-        setInterruptDownload (message.message);
+chrome.runtime.onMessage.addListener((request, sender, callback) => {
+    if (request.extensionId == "interuptopen") {
+        chrome.runtime.sendMessage({ message: interruptDownloads, extensionId: "popintrup" }).catch(function() {});
+    } else if (request.extensionId == "customopen") {
+        chrome.runtime.sendMessage({ message: CustomPort, extensionId: "popcust" }).catch(function() {});
+    } else if (request.extensionId == "portopen") {
+        chrome.runtime.sendMessage({ message: PortSet, extensionId: "popport" }).catch(function() {});
+    } else if (request.extensionId == "interuptchecked") {
+        setInterruptDownload (request.message);
         load_conf ();
-    } else if (message.extensionId == "customchecked") {
-        setPortCustom (message.message);
+    } else if (request.extensionId == "customchecked") {
+        setPortCustom (request.message);
         load_conf ();
-    } else if (message.extensionId == "portval") {
-        setPortInput (message.message);
+    } else if (request.extensionId == "portval") {
+        setPortInput (request.message);
         load_conf ();
+    } else if (request.extensionId == "gdmurl") {
+        if (!interruptDownloads || ResponGdm) {
+            return;
+        }
+        fetch (get_host (), { method: 'post', body: request.message }).then (function (r) { return r.text (); }).catch (function () {});
     }
 });
 
-function get_host () {
+get_host = function () {
     if (CustomPort) {
         return "http://127.0.0.1:" + PortSet;
     } else {
@@ -141,7 +178,7 @@ function get_host () {
     }
 }
 
-function icon_load () {
+icon_load = function () {
     if (interruptDownloads && !ResponGdm) {
         chrome.action.setIcon({path: "./icons/icon_32.png"});
     } else {

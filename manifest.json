@@ -13,6 +13,14 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": [ "http://*/*", "https://*/*", "ftp://*/*", "file:///*" ],
+      "all_frames": true,
+      "js": ["content-script.js"],
+      "css": ["content-script.css"]
+    }
+  ],
   "commands": {
     "Ctrl+Shift+Y": {
       "suggested_key": {
@@ -36,7 +44,10 @@
   },
   "permissions": [
     "downloads",
-    "storage"
+    "storage",
+    "tabs",
+    "webRequest",
+    "activeTab"
   ],
   "host_permissions": ["<all_urls>"]
 }
