@@ -27,8 +27,7 @@ var CustomPort = false;
 load_conf ();
 
 setInterval (function () {
-    fetch (get_host (), {requiredStatus: 'ok'})
-    .then(function() {
+    fetch (get_host (), {requiredStatus: 'ok'}).then(function() {
         ResponGdm = false;
     }).catch(function() {
         ResponGdm = true;
@@ -37,22 +36,27 @@ setInterval (function () {
 }, 2000);
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
-    chrome.webRequest.onResponseStarted.addListener (function GetRespond (content) {
-        if (content.tabId === -1) {
-            return;
-        }
-        const length = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-LENGTH').map (lcont => lcont.value).shift ();
-        if (length > 1) {
-            let gdmtype = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-TYPE')[0].value;
-            if (gdmtype.startsWith ('video')) {
-                chrome.tabs.sendMessage(content.tabId, {message: 'gdmvideo', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
-            } else if (gdmtype.startsWith ('audio')) {
-                chrome.tabs.sendMessage(content.tabId, {message: 'gdmaudio', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
-            }
-        }
-    }, {urls: ['<all_urls>']}, ['responseHeaders']);
-    chrome.tabs.sendMessage(tabId, {message: 'gdmclean'}).then (function () {}).catch(function() {});
+    if (changeInfo.status == 'loading') {
+        chrome.webRequest.onResponseStarted.removeListener (WebContent);
+        chrome.tabs.sendMessage(tabId, {message: 'gdmclean'}).then (function () {}).catch(function() {});
+    }
+    chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
 });
+
+function WebContent (content) {
+    if (content.tabId === -1) {
+        return;
+    }
+    const length = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-LENGTH').map (lcont => lcont.value).shift ();
+    if (length > 1) {
+        let gdmtype = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-TYPE')[0].value;
+        if (gdmtype.startsWith ('video')) {
+            chrome.tabs.sendMessage(content.tabId, {message: 'gdmvideo', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+        } else if (gdmtype.startsWith ('audio')) {
+            chrome.tabs.sendMessage(content.tabId, {message: 'gdmaudio', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+        }
+    }
+}
 
 chrome.downloads.onCreated.addListener (function (downloadItem) {
     if (!interruptDownloads || ResponGdm) {

@@ -3,7 +3,7 @@
   "description": "Integration for Gabut Download Manager.",
   "short_name": "GabutDM",
   "homepage_url": "https://github.com/gabutakut/gabutextentionsGC",
-  "version": "1.8.5",
+  "version": "1.9.0",
   "manifest_version": 3,
   "icons": {
     "32": "icons/icon_32.png",
@@ -16,7 +16,7 @@
   "content_scripts": [
     {
       "matches": [ "http://*/*", "https://*/*", "ftp://*/*", "file:///*" ],
-      "all_frames": true,
+      "all_frames": false,
       "js": ["content-script.js"],
       "css": ["content-script.css"]
     }
