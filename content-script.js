@@ -1,5 +1,5 @@
-let videourl = '';
-let audiourl = '';
+var videourl = '';
+var audiourl = '';
 var input = document.createElement('input');
 input.id = 'menu-open';
 input.className = 'menu-open';

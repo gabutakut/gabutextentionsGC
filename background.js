@@ -20,9 +20,10 @@
 */
 
 var ResponGdm = false;
-var interruptDownloads = true;
+var InterruptDownloads = true;
 var PortSet = "";
 var CustomPort = false;
+var DownloadVideo = false;
 
 load_conf ();
 
@@ -36,11 +37,20 @@ setInterval (function () {
 }, 2000);
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
-    if (changeInfo.status == 'loading') {
-        chrome.webRequest.onResponseStarted.removeListener (WebContent);
-        chrome.tabs.sendMessage(tabId, {message: 'gdmclean'}).then (function () {}).catch(function() {});
+    if (DownloadVideo) {
+        if (changeInfo.status == 'loading') {
+            chrome.webRequest.onResponseStarted.removeListener (WebContent);
+            chrome.tabs.sendMessage(tabId, {message: 'gdmclean'}).then (function () {}).catch(function() {});
+        }
+        chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
+        if (tab.url?.startsWith("chrome://")) {
+            return undefined;
+        }
+        if (changeInfo.status === "complete") {
+            chrome.scripting.executeScript({target: {tabId: tabId}, files: ['content-script.js'],});
+            chrome.scripting.insertCSS({target: { tabId: tabId }, files: ["content-script.css"]});
+        }
     }
-    chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
 });
 
 function WebContent (content) {
@@ -59,7 +69,7 @@ function WebContent (content) {
 }
 
 chrome.downloads.onCreated.addListener (function (downloadItem) {
-    if (!interruptDownloads || ResponGdm) {
+    if (!InterruptDownloads || ResponGdm) {
         return;
     }
     setTimeout (()=> {
@@ -69,7 +79,7 @@ chrome.downloads.onCreated.addListener (function (downloadItem) {
 });
 
 chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
-    if (!interruptDownloads || ResponGdm) {
+    if (!InterruptDownloads || ResponGdm) {
         return;
     }
     setTimeout (()=> {
@@ -114,7 +124,8 @@ async function chromeStorageGetter (key) {
 }
 
 async function load_conf () {
-    interruptDownloads = await chromeStorageGetter ('interrupt-download');
+    InterruptDownloads = await chromeStorageGetter ('interrupt-download');
+    DownloadVideo = await chromeStorageGetter ('video-download');
     CustomPort = await chromeStorageGetter ('port-custom');
     PortSet = await chromeStorageGetter ('port-input');
     icon_load ();
@@ -122,6 +133,10 @@ async function load_conf () {
 
 async function setPortCustom (interrupt) {
     await SavetoStorage('port-custom', interrupt);
+}
+
+async function setVideoMenu (download) {
+    await SavetoStorage('video-download', download);
 }
 
 async function setPortInput (interrupt) {
@@ -142,21 +157,26 @@ async function SavetoStorage(key, value) {
 
 chrome.commands.onCommand.addListener((command) => {
     if (command == "Ctrl+Shift+Y") {
-        setInterruptDownload (!interruptDownloads);
+        setInterruptDownload (!InterruptDownloads);
         load_conf ();
     } else if (command == "Ctrl+Shift+E") {
-        setPortCustom (!CustomPort);
+        setVideoMenu (!DownloadVideo);
         load_conf ();
     }
 });
 
 chrome.runtime.onMessage.addListener((request, sender, callback) => {
     if (request.extensionId == "interuptopen") {
-        chrome.runtime.sendMessage({ message: interruptDownloads, extensionId: "popintrup" }).catch(function() {});
+        chrome.runtime.sendMessage({ message: InterruptDownloads, extensionId: "popintrup" }).catch(function() {});
     } else if (request.extensionId == "customopen") {
         chrome.runtime.sendMessage({ message: CustomPort, extensionId: "popcust" }).catch(function() {});
     } else if (request.extensionId == "portopen") {
         chrome.runtime.sendMessage({ message: PortSet, extensionId: "popport" }).catch(function() {});
+    } else if (request.extensionId == "videoopen") {
+        chrome.runtime.sendMessage({ message: DownloadVideo, extensionId: "popvideo" }).catch(function() {});
+    } else if (request.extensionId == "videochecked") {
+        setVideoMenu (request.message);
+        load_conf ();
     } else if (request.extensionId == "interuptchecked") {
         setInterruptDownload (request.message);
         load_conf ();
@@ -167,7 +187,7 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
         setPortInput (request.message);
         load_conf ();
     } else if (request.extensionId == "gdmurl") {
-        if (!interruptDownloads || ResponGdm) {
+        if (!InterruptDownloads || ResponGdm) {
             return;
         }
         fetch (get_host (), { method: 'post', body: request.message }).then (function (r) { return r.text (); }).catch (function () {});
@@ -183,7 +203,7 @@ get_host = function () {
 }
 
 icon_load = function () {
-    if (interruptDownloads && !ResponGdm) {
+    if (InterruptDownloads && !ResponGdm) {
         chrome.action.setIcon({path: "./icons/icon_32.png"});
     } else {
         chrome.action.setIcon({path: "./icons/icon_disabled_32.png"});

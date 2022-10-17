@@ -21,17 +21,24 @@
 
 let PortInput = $('#port-input');
 let DownloadIntrupt = $('#interrupt-download');
+let DownloadVideo = $('#video-download');
 let PortCustom = $('#port-custom');
 
 chrome.runtime.sendMessage({ extensionId: "interuptopen" }).catch(function() {});
 chrome.runtime.sendMessage({ extensionId: "customopen" }).catch(function() {});
 chrome.runtime.sendMessage({ extensionId: "portopen" }).catch(function() {});
+chrome.runtime.sendMessage({ extensionId: "videoopen" }).catch(function() {});
+
 DownloadIntrupt.on("change", dwinterupt);
 PortCustom.on("change", customchecked);
+DownloadVideo.on("change", videocase);
 PortInput.on("change paste keyup", portinput);
 
 function dwinterupt () {
      chrome.runtime.sendMessage({  message: DownloadIntrupt.prop ('checked'), extensionId: "interuptchecked" }).catch(function() {});
+}
+function videocase () {
+     chrome.runtime.sendMessage({  message: DownloadVideo.prop ('checked'), extensionId: "videochecked" }).catch(function() {});
 }
 
 function customchecked () {
@@ -47,10 +54,12 @@ chrome.runtime.onMessage.addListener((request, callback) => {
      if (request.extensionId == "Ctrl+Shift+Y") {
           DownloadIntrupt.prop('checked', request.message);
      } else if (request.extensionId == "Ctrl+Shift+E") {
-          PortCustom.prop('checked', request.message);
+          DownloadVideo.prop('checked', request.message);
           hide_popin ();
      } else if (request.extensionId == "popintrup") {
           DownloadIntrupt.prop('checked', request.message);
+     } else if (request.extensionId == "popvideo") {
+          DownloadVideo.prop('checked', request.message);
      } else if (request.extensionId == "popcust") {
           PortCustom.prop('checked', request.message);
           hide_popin ();
@@ -70,4 +79,5 @@ function hide_popin () {
 setInterval(function () {
      chrome.runtime.sendMessage({ extensionId: "interuptopen" }).catch(function() {});
      chrome.runtime.sendMessage({ extensionId: "customopen" }).catch(function() {});
+     chrome.runtime.sendMessage({ extensionId: "videoopen" }).catch(function() {});
 }, 1000);
