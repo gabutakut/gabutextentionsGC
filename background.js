@@ -36,20 +36,39 @@ setInterval (function () {
     icon_load ();
 }, 2000);
 
+async function RunScript (tabId, callback) {
+    let existid = false;
+    let scripts = await chrome.scripting.getRegisteredContentScripts();
+    for (let scrid of scripts.map((script) => script.id)) {
+        if (`${tabId}` === scrid) {
+            existid = true;
+        }
+    }
+    callback (existid);
+}
+
+async function StopScript (tabId) {
+    await chrome.scripting.unregisterContentScripts({ids: [`${tabId}`],}).catch(function() {});
+}
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
     if (DownloadVideo) {
         if (changeInfo.status == 'loading') {
+            RunScript (tabId, function (existid) {
+                if (!existid) {
+                    chrome.scripting.registerContentScripts([{id: `${tabId}`, allFrames: false, matches: ['<all_urls>'], js: ['content-script.js'], css: ['content-script.css']}]);
+                }
+            });
             chrome.webRequest.onResponseStarted.removeListener (WebContent);
             chrome.tabs.sendMessage(tabId, {message: 'gdmclean'}).then (function () {}).catch(function() {});
         }
         chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
-        if (tab.url?.startsWith("chrome://")) {
-            return undefined;
-        }
-        if (changeInfo.status === "complete") {
-            chrome.scripting.executeScript({target: {tabId: tabId}, files: ['content-script.js'],});
-            chrome.scripting.insertCSS({target: { tabId: tabId }, files: ["content-script.css"]});
-        }
+    } else {
+        RunScript (tabId, function (existid) {
+            if (existid) {
+                StopScript (tabId);
+            }
+        });
     }
 });
 
