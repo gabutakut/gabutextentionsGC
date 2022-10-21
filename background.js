@@ -76,7 +76,7 @@ function WebContent (content) {
     if (content.tabId === -1) {
         return;
     }
-    const length = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-LENGTH').map (lcont => lcont.value).shift ();
+    let length = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-LENGTH').map (lcont => lcont.value).shift ();
     if (length > 1) {
         let gdmtype = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-TYPE')[0].value;
         if (gdmtype.startsWith ('video')) {
@@ -94,7 +94,7 @@ chrome.downloads.onCreated.addListener (function (downloadItem) {
     setTimeout (()=> {
         chrome.downloads.cancel (downloadItem.id);
         chrome.downloads.erase ({ id: downloadItem.id });
-    }, 1);
+    }, SendToOniDM (get_downloader (downloadItem)));
 });
 
 chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
@@ -104,34 +104,16 @@ chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
     setTimeout (()=> {
         chrome.downloads.cancel (downloadItem.id);
         chrome.downloads.erase ({ id: downloadItem.id });
-    }, SendToOniDM (downloadItem));
+    }, SendToOniDM (get_downloader (downloadItem)));
 });
 
 SendToOniDM = function (downloadItem) {
-    fetch (get_host (), { method: 'post', body: get_downloader (downloadItem) }).then (function (r) { return r.text (); }).catch (function () {});
+    fetch (get_host (), { method: 'post', body: downloadItem }).then (function (r) { return r.text (); }).catch (function () {});
     return 2;
 }
 
 function get_downloader (downloadItem) {
-    let gdmurl = 'link:';
-    gdmurl += downloadItem['finalUrl'];
-    gdmurl += ',';
-    gdmurl += 'filename:';
-    gdmurl += downloadItem['filename'];
-    gdmurl += ',';
-    gdmurl += 'referrer:';
-    gdmurl += downloadItem['referrer'];
-    gdmurl += ',';
-    gdmurl += 'mimetype:';
-    gdmurl += downloadItem['mime'];
-    gdmurl += ',';
-    gdmurl += 'filesize:';
-    gdmurl += downloadItem['fileSize'];
-    gdmurl += ',';
-    gdmurl += 'resumable:';
-    gdmurl += downloadItem['canResume'];
-    gdmurl += ',';
-    return gdmurl;
+    return`link:${downloadItem['finalUrl']},filename:${downloadItem['filename']},referrer:${downloadItem['referrer']},mimetype:${downloadItem['mime']},filesize:${downloadItem['fileSize']},resumable:${downloadItem['canResume']},`;
 }
 
 async function chromeStorageGetter (key) {
@@ -209,13 +191,13 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
         if (!InterruptDownloads || ResponGdm) {
             return;
         }
-        fetch (get_host (), { method: 'post', body: request.message }).then (function (r) { return r.text (); }).catch (function () {});
+        SendToOniDM (request.message);
     }
 });
 
 get_host = function () {
     if (CustomPort) {
-        return "http://127.0.0.1:" + PortSet;
+        return `http://127.0.0.1:${PortSet}`;
     } else {
         return "http://127.0.0.1:2021";
     }
