@@ -55,7 +55,6 @@ chrome.runtime.onMessage.addListener((request, callback) => {
           DownloadIntrupt.prop('checked', request.message);
      } else if (request.extensionId == "Ctrl+Shift+E") {
           DownloadVideo.prop('checked', request.message);
-          hide_popin ();
      } else if (request.extensionId == "popintrup") {
           DownloadIntrupt.prop('checked', request.message);
      } else if (request.extensionId == "popvideo") {
