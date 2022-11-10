@@ -52,16 +52,17 @@ chrome.runtime.onMessage.addListener (function(request, sender, sendResponse) {
   if (request.message == 'gdmvideo') {
     videourl = get_downloader (request);
     vbutton.style.backgroundImage = vdbgred ('white');
-    vbutton.setAttribute('title', request.mimetype);
+    vbutton.setAttribute('title', 'Available');
   } else if (request.message == 'gdmaudio') {
     audiourl = get_downloader (request);
     abutton.style.backgroundImage = adbgred ('white');
-    abutton.setAttribute('title', request.mimetype);
+    abutton.setAttribute('title', 'Available');
   } else if (request.message == 'gdmclean') {
-    videourl = '';
-    audiourl = '';
     vbutton.style.backgroundImage = vdbgred ('red');
     abutton.style.backgroundImage = adbgred ('red');
+    vbutton.setAttribute('title', 'Not Available');
+    abutton.setAttribute('title', 'Not Available');
+    videourl = audiourl = '';
   }
 });
 
