@@ -50,11 +50,11 @@ function audioLink () {
 }
 chrome.runtime.onMessage.addListener (function(request, sender, sendResponse) {
   if (request.message == 'gdmvideo') {
-    videourl = get_downloader (request);
+    videourl = get_downloader (request, 'Video');
     vbutton.style.backgroundImage = vdbgred ('white');
     vbutton.setAttribute('title', 'Available');
   } else if (request.message == 'gdmaudio') {
-    audiourl = get_downloader (request);
+    audiourl = get_downloader (request, 'Audio');
     abutton.style.backgroundImage = adbgred ('white');
     abutton.setAttribute('title', 'Available');
   } else if (request.message == 'gdmclean') {
@@ -66,8 +66,8 @@ chrome.runtime.onMessage.addListener (function(request, sender, sendResponse) {
   }
 });
 
-function get_downloader (request) {
-  return `link:${request.urls.replace (/&range=\d+-\d+/, '')},filename:${removeCharacters (document.title)}.${request.mimetype.split ('/')[1]},referrer:${document.URL},mimetype:${request.mimetype},filesize:${request.size},resumable:false,`;
+function get_downloader (request, filesource) {
+  return `link:${request.urls.replace (/&range=\d+-\d+/, '')},filename:${removeCharacters (document.title)} ${filesource}.${request.mimetype.split ('/')[1]},referrer:${document.URL},mimetype:${request.mimetype},filesize:${request.size},resumable:false,`;
 }
 
 function vdbgred (color) {
