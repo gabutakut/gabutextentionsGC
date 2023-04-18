@@ -1,4 +1,4 @@
-.btcontainer {
+.btcontainer-gdm {
   position: fixed;
   right: 0%;
   bottom: 10%;
@@ -8,7 +8,7 @@
   z-index: 1000000;
 }
 
-.menu-item, .menu-open-button {
+.menu-item-gdm, .menu-open-button-gdm {
   background: #d47f00;
   border-radius: 10%;
   width: 50px;
@@ -22,10 +22,10 @@
   transform: translate3d(0, 0, 0);
   transition: transform ease-out 200ms;
 }
-.menu-open {
+.menu-open-gdm {
   display: none;
 }
-.linemenu {
+.linemenu-gdm {
   width: 25px;
   height: 3px;
   background: white;
@@ -37,63 +37,63 @@
   margin-top: -1.5px;
   transition: transform 200ms;
 }
-.linemenu-1 {
+.linemenu-gdm-1 {
   transform: translate3d(0, -8px, 0);
 }
-.linemenu-2 {
+.linemenu-gdm-2 {
   transform: translate3d(0, 0, 0);
 }
-.linemenu-3 {
+.linemenu-gdm-3 {
   transform: translate3d(0, 8px, 0);
 }
-.menu-open:checked + .menu-open-button .linemenu-1 {
+.menu-open-gdm:checked + .menu-open-button-gdm .linemenu-gdm-1 {
   transform: translate3d(0, 0, 0) rotate(45deg);
 }
-.menu-open:checked + .menu-open-button .linemenu-2 {
+.menu-open-gdm:checked + .menu-open-button-gdm .linemenu-gdm-2 {
   transform: translate3d(0, 0, 0) scale(0.1, 1);
 }
-.menu-open:checked + .menu-open-button .linemenu-3 {
+.menu-open-gdm:checked + .menu-open-button-gdm .linemenu-gdm-3 {
   transform: translate3d(0, 0, 0) rotate(-45deg);
 }
-.menu-item:hover {
+.menu-item-gdm:hover {
   cursor: pointer;
 }
-.menu-item:nth-child(3) {
+.menu-item-gdm:nth-child(3) {
   transition-duration: 180ms;
 }
-.menu-item:nth-child(4) {
+.menu-item-gdm:nth-child(4) {
   transition-duration: 180ms;
 }
-.menu-item:nth-child(5) {
+.menu-item-gdm:nth-child(5) {
   transition-duration: 180ms;
 }
-.menu-open-button {
+.menu-open-button-gdm {
   z-index: 1;
   transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transition-duration: 400ms;
   transform: scale(1.1, 1.1) translate3d(0, 0, 0);
   cursor: pointer;
 }
-.menu-open-button:hover {
+.menu-open-button-gdm:hover {
   transform: scale(1.2, 1.2) translate3d(0, 0, 0);
 }
-.menu-open:checked + .menu-open-button {
+.menu-open-gdm:checked + .menu-open-button-gdm {
   transition-timing-function: linear;
   transition-duration: 200ms;
   transform: scale(0.8, 0.8) translate3d(0, 0, 0);
 }
-.menu-open:checked ~ .menu-item {
+.menu-open-gdm:checked ~ .menu-item-gdm {
   transition-timing-function: cubic-bezier(0.165, 0.84, 0.44, 1);
 }
-.menu-open:checked ~ .menu-item:nth-child(3) {
+.menu-open-gdm:checked ~ .menu-item-gdm:nth-child(3) {
   transition-duration: 190ms;
   transform: translate3d(-70px, 0, 0);
 }
-.menu-open:checked ~ .menu-item:nth-child(4) {
+.menu-open-gdm:checked ~ .menu-item-gdm:nth-child(4) {
   transition-duration: 290ms;
   transform: translate3d(-140px, 0, 0);
 }
-.menu-open:checked ~ .menu-item:nth-child(5) {
+.menu-open-gdm:checked ~ .menu-item-gdm:nth-child(5) {
   transition-duration: 390ms;
   transform: translate3d(-210px, 0, 0);
 }
