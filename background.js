@@ -40,7 +40,7 @@ async function RunScript (tabId, callback) {
     let existid = false;
     let scripts = await chrome.scripting.getRegisteredContentScripts();
     for (let scrid of scripts.map((script) => script.id)) {
-        if (`${tabId}` === scrid) {
+        if (`${tabId}` == scrid) {
             existid = true;
         }
     }
@@ -48,12 +48,13 @@ async function RunScript (tabId, callback) {
 }
 
 async function StopScript (tabId) {
-    await chrome.scripting.unregisterContentScripts({ids: [`${tabId}`],}).catch(function() {});
+    await chrome.scripting.unregisterContentScripts ({ids: [`${tabId}`],}).catch(function() {});
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
     if (DownloadVideo) {
         if (changeInfo.status == 'loading') {
+            chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
             RunScript (tabId, function (existid) {
                 if (!existid) {
                     chrome.scripting.registerContentScripts([{id: `${tabId}`, allFrames: false, matches: ['<all_urls>'], js: ['content-script.js'], css: ['content-script.css']}]);
@@ -61,14 +62,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
             });
             chrome.webRequest.onResponseStarted.removeListener (WebContent);
             chrome.tabs.sendMessage(tabId, {message: 'gdmclean'}).then (function () {}).catch(function() {});
+            chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
         }
-        chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
     } else {
-        RunScript (tabId, function (existid) {
-            if (existid) {
-                StopScript (tabId);
-            }
-        });
+        StopScript (tabId);
+        chrome.webRequest.onResponseStarted.removeListener (WebContent);
     }
 });
 
@@ -80,7 +78,9 @@ function WebContent (content) {
     if (length > 1) {
         let gdmtype = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-TYPE')[0].value;
         if (gdmtype.startsWith ('video')) {
-            chrome.tabs.sendMessage(content.tabId, {message: 'gdmvideo', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+            if (length > 10000000) {
+                chrome.tabs.sendMessage(content.tabId, {message: 'gdmvideo', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+            }
         } else if (gdmtype.startsWith ('audio')) {
             chrome.tabs.sendMessage(content.tabId, {message: 'gdmaudio', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
         }
@@ -91,25 +91,32 @@ chrome.downloads.onCreated.addListener (function (downloadItem) {
     if (!InterruptDownloads || ResponGdm) {
         return;
     }
-    setTimeout (()=> {
-        chrome.downloads.cancel (downloadItem.id);
-        chrome.downloads.erase ({ id: downloadItem.id });
-    }, SendToOniDM (get_downloader (downloadItem)));
+    if(chrome.runtime.lastError) {
+        if (!downloadItem['finalUrl'].includes ("blob:")) {
+            chrome.downloads.cancel (downloadItem.id);
+        }
+    } else {
+        console.clear ();
+    }
 });
 
 chrome.downloads.onDeterminingFilename.addListener (function (downloadItem) {
     if (!InterruptDownloads || ResponGdm) {
         return;
     }
-    setTimeout (()=> {
-        chrome.downloads.cancel (downloadItem.id);
-        chrome.downloads.erase ({ id: downloadItem.id });
-    }, SendToOniDM (get_downloader (downloadItem)));
+    if (downloadItem['finalUrl'].includes ("blob:")) {
+        return;
+    }
+    SendToOniDM (get_downloader (downloadItem));
+    queueMicrotask (function () {
+        chrome.downloads.cancel (downloadItem.id, function () {
+            chrome.downloads.erase ({ id: downloadItem.id });
+        });
+    });
 });
 
 SendToOniDM = function (downloadItem) {
     fetch (get_host (), { method: 'post', body: downloadItem }).then (function (r) { return r.text (); }).catch (function () {});
-    return 2;
 }
 
 function get_downloader (downloadItem) {
