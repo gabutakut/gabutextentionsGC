@@ -196,11 +196,17 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
         load_conf ();
     } else if (request.extensionId == "gdmurl") {
         if (!InterruptDownloads || ResponGdm) {
+            downloadchrome (request.message);
             return;
         }
         SendToOniDM (request.message);
     }
 });
+
+async function downloadchrome (urls) {
+    let url = urls.substring (5, urls.lastIndexOf(",filename:"));
+    await chrome.downloads.download({url: url});
+}
 
 get_host = function () {
     if (CustomPort) {
