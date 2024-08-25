@@ -40,21 +40,21 @@ async function RunScript (tabId, callback) {
     let existid = false;
     let scripts = await chrome.scripting.getRegisteredContentScripts();
     for (let scrid of scripts.map((script) => script.id)) {
-        if (`${tabId}` == scrid) {
-            existid = true;
-        }
+        existid = true;
     }
     callback (existid);
 }
 
 async function StopScript (tabId) {
-    await chrome.scripting.unregisterContentScripts ({ids: [`${tabId}`],}).catch(function() {});
+    let scripts = await chrome.scripting.getRegisteredContentScripts();
+    for (let scrid of scripts.map((script) => script.id)) {
+        await chrome.scripting.unregisterContentScripts ({ids: [scrid],}).catch(function() {});
+    }
 }
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab)=> {
     if (DownloadVideo) {
         if (changeInfo.status == 'loading') {
-            chrome.webRequest.onResponseStarted.addListener (WebContent, {urls: ['<all_urls>']}, ['responseHeaders']);
             RunScript (tabId, function (existid) {
                 if (!existid) {
                     chrome.scripting.registerContentScripts([{id: `${tabId}`, allFrames: false, matches: ['<all_urls>'], js: ['content-script.js'], css: ['content-script.css']}]);
@@ -76,13 +76,15 @@ function WebContent (content) {
     }
     let length = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-LENGTH').map (lcont => lcont.value).shift ();
     if (length > 1) {
-        let gdmtype = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-TYPE')[0].value;
-        if (gdmtype.startsWith ('video')) {
-            if (length > 10000000) {
-                chrome.tabs.sendMessage(content.tabId, {message: 'gdmvideo', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+        let gdmtype = content.responseHeaders.filter (cont => cont.name.toUpperCase () === 'CONTENT-TYPE').map (lcont => lcont.value).shift ();
+        if (gdmtype != 'undefined') {
+            if (`${gdmtype}`.startsWith ('video')) {
+                if (length > 10000000) {
+                    chrome.tabs.sendMessage(content.tabId, {message: 'gdmvideo', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
+                }
+            } else if (`${gdmtype}`.startsWith ('audio')) {
+                chrome.tabs.sendMessage(content.tabId, {message: 'gdmaudio', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
             }
-        } else if (gdmtype.startsWith ('audio')) {
-            chrome.tabs.sendMessage(content.tabId, {message: 'gdmaudio', urls: content.url, size: length, mimetype: gdmtype}).then (function () {}).catch(function() {});
         }
     }
 }
