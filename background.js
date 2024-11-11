@@ -170,7 +170,11 @@ chrome.commands.onCommand.addListener((command) => {
         setInterruptDownload (!InterruptDownloads);
         load_conf ();
     } else if (command == "Ctrl+Shift+E") {
-        setVideoMenu (!DownloadVideo);
+        DownloadVideo = !DownloadVideo;
+        chrome.tabs.query ({}, function(tab){
+            chrome.tabs.reload (tab.Id, null, function () {});
+        });
+        setVideoMenu (DownloadVideo);
         load_conf ();
     }
 });
@@ -185,6 +189,12 @@ chrome.runtime.onMessage.addListener((request, sender, callback) => {
     } else if (request.extensionId == "videoopen") {
         chrome.runtime.sendMessage({ message: DownloadVideo, extensionId: "popvideo" }).catch(function() {});
     } else if (request.extensionId == "videochecked") {
+        if (DownloadVideo != request.message) {
+            DownloadVideo = request.message;
+            chrome.tabs.query ({}, function(tab){
+                chrome.tabs.reload (tab.Id, null, function () {});
+            });
+        }
         setVideoMenu (request.message);
         load_conf ();
     } else if (request.extensionId == "interuptchecked") {
