@@ -38,25 +38,28 @@ function removeCharacters(input) {
   }
   return input
 }
+
 function videoLink () {
   if (videourl != '') {
     chrome.runtime.sendMessage({ message: videourl, extensionId: 'gdmurl'}).catch(function() {});
   }
 }
+
 function audioLink () {
   if (audiourl != '') {
     chrome.runtime.sendMessage({ message: audiourl, extensionId: 'gdmurl'}).catch(function() {});
   }
 }
+
 chrome.runtime.onMessage.addListener (function(request, sender, sendResponse) {
   if (request.message == 'gdmvideo') {
     videourl = get_downloader (request, 'Video');
     vbutton.style.backgroundImage = vdbgred ('white');
-    vbutton.setAttribute('title', 'Available');
+    vbutton.setAttribute('title', humanFileSize (request.size));
   } else if (request.message == 'gdmaudio') {
     audiourl = get_downloader (request, 'Audio');
     abutton.style.backgroundImage = adbgred ('white');
-    abutton.setAttribute('title', 'Available');
+    abutton.setAttribute('title', humanFileSize (request.size));
   } else if (request.message == 'gdmclean') {
     vbutton.style.backgroundImage = vdbgred ('red');
     abutton.style.backgroundImage = adbgred ('red');
@@ -66,6 +69,11 @@ chrome.runtime.onMessage.addListener (function(request, sender, sendResponse) {
   }
 });
 
+function humanFileSize(size) {
+  var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
+  return +((size / Math.pow(1024, i)).toFixed(2)) * 1 + ' ' + ['B', 'kB', 'MB', 'GB', 'TB'][i];
+}
+
 function get_downloader (request, filesource) {
   return `link:${request.urls.replace (/&range=\d+-\d+/, '')},filename:${removeCharacters (document.title)} ${filesource}.${request.mimetype.split ('/')[1]},referrer:${document.URL},mimetype:${request.mimetype},filesize:${request.size},resumable:false,`;
 }
@@ -73,6 +81,7 @@ function get_downloader (request, filesource) {
 function vdbgred (color) {
   return `url(\"data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'38\' height=\'38\' fill=\'${color}\' class=\'bi bi-film\' viewBox=\'0 0 16 16\'%3E%3Cpath d=\'M0 1a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V1zm4 0v6h8V1H4zm8 8H4v6h8V9zM1 1v2h2V1H1zm2 3H1v2h2V4zM1 7v2h2V7H1zm2 3H1v2h2v-2zm-2 3v2h2v-2H1zM15 1h-2v2h2V1zm-2 3v2h2V4h-2zm2 3h-2v2h2V7zm-2 3v2h2v-2h-2zm2 3h-2v2h2v-2z\'/%3E%3C/svg%3E\")`;
 }
+
 function adbgred (color) {
   return `url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='38' fill=\'${color}\' class='bi bi-music-note-beamed' viewBox='0 0 16 16'%3E%3Cpath d='M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13c0-1.104 1.12-2 2.5-2s2.5.896 2.5 2zm9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2z\'/%3E%3Cpath fill-rule=\'evenodd\' d=\'M14 11V2h1v9h-1zM6 3v10H5V3h1z\'/%3E%3Cpath d=\'M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4V2.905z\'/%3E%3C/svg%3E\")`;
 }
