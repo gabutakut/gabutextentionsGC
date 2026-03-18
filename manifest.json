@@ -1,9 +1,9 @@
 {
   "name": "Gabut Download Manager",
-  "description": "Integration for Gabut Download Manager.",
+  "description": "Integration for Gabut Download Manager. Detect and manage video, audio, and streaming downloads.",
   "short_name": "GabutDM",
   "homepage_url": "https://github.com/gabutakut/gabutextentionsGC",
-  "version": "2.6.2",
+  "version": "2.8.0",
   "manifest_version": 3,
   "icons": {
     "32": "icons/icon_32.png",
@@ -40,7 +40,7 @@
     "tabs",
     "webRequest",
     "activeTab",
-    "scripting"
+    "cookies"
   ],
   "host_permissions": ["<all_urls>"]
 }
